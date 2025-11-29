@@ -1,0 +1,160 @@
+<template>
+  <view class="page auth-login">
+    <view v-if="ui.globalLoading" class="top-loading"></view>
+    <view class="page-inner">
+      <view class="header">
+        <text class="title">{{ T.title }}</text>
+        <text class="subtitle">{{ T.welcome }}</text>
+      </view>
+      <view class="input-container">
+        <input
+          class="input-field"
+          type="text"
+          v-model="phone"
+          :placeholder="T.phone"
+        />
+        <label class="input-label">{{ T.phone }}</label>
+        <span class="input-highlight"></span>
+      </view>
+      <view class="input-container">
+        <input
+          class="input-field"
+          type="password"
+          v-model="password"
+          :placeholder="T.password"
+        />
+        <label class="input-label">{{ T.password }}</label>
+        <span class="input-highlight"></span>
+      </view>
+      <view class="actions">
+        <button class="fancy" @click="doLogin" :disabled="loading">
+          <text class="top-key"></text>
+          <text class="text">{{ loading ? T.loggingIn : T.login }}</text>
+          <text class="bottom-key-1"></text>
+          <text class="bottom-key-2"></text>
+        </button>
+        <button class="fancy" @click="toRegister">
+          <text class="top-key"></text>
+          <text class="text">{{ T.toRegister }}</text>
+          <text class="bottom-key-1"></text>
+          <text class="bottom-key-2"></text>
+        </button>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useAuthStore } from '../../store/auth.js';
+import { errorMessage } from '../../utils/errors.js';
+import { useUiStore } from '../../store/ui.js';
+import { setLoadingHooks } from '../../services/http.js';
+
+const store = useAuthStore();
+const ui = useUiStore();
+const phone = ref('');
+const password = ref('');
+const loading = ref(false);
+
+// 避免编码问题：使�?Unicode 转义
+const T = {
+  title: '\u767b\u5f55',
+  welcome: '\u6b22\u8fce\u56de\u6765',
+  phone: '\u624b\u673a\u53f7',
+  password: '\u5bc6\u7801',
+  login: '\u767b\u5f55',
+  loggingIn: '\u767b\u5f55\u4e2d... ',
+  toRegister: '\u53bb\u6ce8\u518c',
+  pleasePhonePass: '\u8bf7\u8f93\u5165\u624b\u673a\u53f7\u4e0e\u5bc6\u7801',
+  loginOk: '\u767b\u5f55\u6210\u529f',
+  loginFail: '\u767b\u5f55\u5931\u8d25',
+};
+
+async function doLogin() {
+  if (!phone.value || !password.value) {
+    return uni.showToast({ title: T.pleasePhonePass, icon: 'none' });
+  }
+  loading.value = true;
+  try {
+    await store.login({ phone: phone.value, password: password.value });
+    try { await store.loadMe(); } catch (_) {}
+    uni.showToast({ title: T.loginOk, icon: 'success' });
+    uni.reLaunch({ url: '/pages/system/index' });
+  } catch (e) {
+    uni.showToast({ title: errorMessage(e, T.loginFail), icon: 'none' });
+  } finally {
+    loading.value = false;
+  }
+}
+function toRegister() { uni.navigateTo({ url: '/pages/auth/register' }); }
+
+onMounted(() => { setLoadingHooks(() => ui.begin(), () => ui.end()); });
+</script>
+
+<style>
+@import '../../io-modules/button/button.css';
+@import '../../io-modules/input1/input1.css';
+</style>
+
+<style scoped>
+.page {
+  min-height: 100vh;
+  padding: 16px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(#f2f2f2, #ffffff);
+}
+
+.page-inner {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.header {
+  margin-bottom: 28px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.subtitle {
+  color: #ccc;
+  display: block;
+  margin-top: 8px;
+  font-size: 18px;
+}
+
+.input-container {
+  margin-top: 24px;
+}
+
+.actions {
+  margin-top: 32px;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.actions .fancy {
+  float: none;
+}
+
+.top-loading {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #111, #aaa, #111);
+  z-index: 9999;
+  opacity: 0.9;
+}
+</style>

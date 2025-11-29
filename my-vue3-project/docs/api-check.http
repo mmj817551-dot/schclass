@@ -1,0 +1,245 @@
+# 环境变量
+@baseUrl = http://localhost:3000/api
+@teacherPhone = 13900093001
+@studentPhone = 13900093002
+@adminPhone = 13900099999
+@password = P@ssw0rd
+@d1 = 2025-11-21
+@d2 = 2025-11-22
+
+### 健康检查
+GET {{baseUrl}}/health/live
+
+### 就绪检查
+GET {{baseUrl}}/health/ready
+
+### 注册-教师
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "role": "teacher",
+  "name": "T1",
+  "phone": "{{teacherPhone}}",
+  "password": "{{password}}",
+  "subject": "数学"
+}
+
+### 注册-学生
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "role": "student",
+  "name": "S1",
+  "phone": "{{studentPhone}}",
+  "password": "{{password}}"
+}
+
+### 登录-教师（保存 token 与 teacherId）
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "phone": "{{teacherPhone}}",
+  "password": "{{password}}"
+}
+> {% 
+  var json = {}; 
+  try { json = JSON.parse(response.body || '{}'); } catch(e) { json = {}; }
+  var data = (json && json.data) || {};
+  client.global.set("teacherToken", data.token);
+  client.global.set("teacherId", data.user && data.user._id);
+%}
+
+### 登录-学生（保存 token 与 studentId）
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "phone": "{{studentPhone}}",
+  "password": "{{password}}"
+}
+> {% 
+  var json = {}; 
+  try { json = JSON.parse(response.body || '{}'); } catch(e) { json = {}; }
+  var data = (json && json.data) || {};
+  client.global.set("studentToken", data.token);
+  client.global.set("studentId", data.user && data.user._id);
+%}
+
+### （可选）登录-管理员（需已种子创建）
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "phone": "{{adminPhone}}",
+  "password": "{{password}}"
+}
+> {% 
+  var json = {}; 
+  try { json = JSON.parse(response.body || '{}'); } catch(e) { json = {}; }
+  var data = (json && json.data) || {};
+  client.global.set("adminToken", data.token);
+%}
+
+### 我是谁（教师）
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{teacherToken}}
+
+### 我是谁（学生）
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{studentToken}}
+
+### 搜索学生（教师）
+GET {{baseUrl}}/users/students/search?name=S1&phone=
+Authorization: Bearer {{teacherToken}}
+
+### 发起绑定（教师）
+POST {{baseUrl}}/bindings
+Authorization: Bearer {{teacherToken}}
+Content-Type: application/json
+
+{
+  "studentId": "{{studentId}}"
+}
+> {% 
+  var json = {}; 
+  try { json = JSON.parse(response.body || '{}'); } catch(e) { json = {}; }
+  var data = (json && json.data) || {};
+  client.global.set("bindingId", data.bindingId);
+%}
+
+### 学生待审批绑定（学生）
+GET {{baseUrl}}/bindings/pending
+Authorization: Bearer {{studentToken}}
+
+### 学生同意绑定（学生）
+PATCH {{baseUrl}}/bindings/{{bindingId}}
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+
+{
+  "action": "approve"
+}
+
+### 教师名下学生（教师）
+GET {{baseUrl}}/users/teachers/{{teacherId}}/students
+Authorization: Bearer {{teacherToken}}
+
+### 房间列表（公开）
+GET {{baseUrl}}/rooms
+
+> {% 
+  var json = {}; 
+  try { json = JSON.parse(response.body || '[]'); } catch(e) { json = {}; }
+  var rooms = json.data || [];
+  var small = rooms.find(function(r){ return r.type==='small'; });
+  var large = rooms.find(function(r){ return r.type==='large'; });
+  client.global.set('roomSmall', small ? small._id : '');
+  client.global.set('roomLarge', large ? large._id : '');
+%}
+
+### 创建预约-小教室（教师）
+POST {{baseUrl}}/reservations
+Authorization: Bearer {{teacherToken}}
+Content-Type: application/json
+
+{
+  "roomId": "{{roomSmall}}",
+  "subject": "数学",
+  "studentIds": ["{{studentId}}"],
+  "slots": [
+    { "date": "{{d1}}", "slot": "晚1" }
+  ]
+}
+> {% 
+  var json = {}; 
+  try { json = JSON.parse(response.body || '{}'); } catch(e) { json = {}; }
+  var data = (json && json.data) || {};
+  client.global.set("reservationId", data.reservationId);
+%}
+
+### 冲突测试-小教室（教师，期望 409）
+POST {{baseUrl}}/reservations
+Authorization: Bearer {{teacherToken}}
+Content-Type: application/json
+
+{
+  "roomId": "{{roomSmall}}",
+  "subject": "数学",
+  "studentIds": ["{{studentId}}"],
+  "slots": [
+    { "date": "{{d1}}", "slot": "晚1" }
+  ]
+}
+
+### 教室区间预约（公开便捷接口）
+GET {{baseUrl}}/rooms/{{roomSmall}}/reservations?from={{d1}}&to={{d2}}
+
+### 区间预约（公开汇总）
+GET {{baseUrl}}/reservations?from={{d1}}&to={{d2}}&roomId={{roomSmall}}
+
+### 我的本周（教师）
+GET {{baseUrl}}/reservations/my?from={{d1}}&to={{d2}}&role=teacher
+Authorization: Bearer {{teacherToken}}
+
+### 我的本周（学生）
+GET {{baseUrl}}/reservations/my?from={{d1}}&to={{d2}}&role=student
+Authorization: Bearer {{studentToken}}
+
+### 预约详情（登录）
+GET {{baseUrl}}/reservations/{{reservationId}}
+Authorization: Bearer {{teacherToken}}
+
+### 取消预约（教师）
+DELETE {{baseUrl}}/reservations/{{reservationId}}
+Authorization: Bearer {{teacherToken}}
+
+### （学生）请求解绑
+POST {{baseUrl}}/bindings/{{bindingId}}/unbind
+Authorization: Bearer {{studentToken}}
+
+### （教师）待审批解绑列表
+GET {{baseUrl}}/bindings/pending-unbind
+Authorization: Bearer {{teacherToken}}
+
+> {% 
+  var json = {}; 
+  try { json = JSON.parse(response.body || '[]'); } catch(e) { json = {}; }
+  var pend = json.data || [];
+  var unbindId = pend[0] ? pend[0]._id : '';
+  client.global.set('unbindId', unbindId);
+%}
+
+### （教师）同意解绑
+PATCH {{baseUrl}}/bindings/{{unbindId}}/unbind
+Authorization: Bearer {{teacherToken}}
+Content-Type: application/json
+
+{
+  "action": "approve"
+}
+
+### 获取配置（公开）
+GET {{baseUrl}}/config
+
+### 修改配置（管理员）
+PATCH {{baseUrl}}/config
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "largeRoomCapacity": 12,
+  "weekStart": "monday",
+  "timezone": "Asia/Shanghai"
+}
+
+### 月报导出 CSV（管理员）
+GET {{baseUrl}}/reports/monthly?month=2025-11&format=csv
+Authorization: Bearer {{adminToken}}
+
+### 月报导出 PDF（管理员）
+GET {{baseUrl}}/reports/monthly?month=2025-11&format=pdf
+Authorization: Bearer {{adminToken}}
+

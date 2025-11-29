@@ -1,0 +1,42 @@
+config:
+  target: "http://localhost:3000/api"
+  phases:
+    - duration: 10
+      arrivalRate: 1
+      name: Warm up
+    - duration: 20
+      arrivalRate: 10
+      name: Small burst
+    - duration: 20
+      arrivalRate: 30
+      name: Peak
+  defaults:
+    headers:
+      Content-Type: application/json
+  processor: ./processor.js
+  variables:
+    teacherPhone: "13900093001"
+    studentPhone: "13900093002"
+    password: "P@ssw0rd"
+    d1: "2025-11-21"
+    roomId: "{{ $env.ROOM_SMALL || '' }}" # 可通过环境变量注入小教室ID
+scenarios:
+  - name: Concurrency on small room slot
+    flow:
+      - function: loginTeacher
+      - function: ensureBinding
+      - post:
+          url: "/reservations"
+          headers:
+            Authorization: "Bearer {{ teacherToken }}"
+          json:
+            roomId: "{{ roomId }}"
+            subject: "数学"
+            studentIds:
+              - "{{ studentId }}"
+            slots:
+              - date: "{{ d1 }}"
+                slot: "晚1"
+      - think: 1
+      - function: recordResult
+

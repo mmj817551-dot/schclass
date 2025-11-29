@@ -1,0 +1,236 @@
+/* From Uiverse.io by ryota1231 */ 
+.animated-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 36px;
+  border: 4px solid;
+  border-color: transparent;
+  font-size: 16px;
+  background-color: #ecede5;
+  border-radius: 100px;
+  font-weight: 600;
+  color: #5c6d9a;
+  box-shadow: 0 0 0 2px #ffffff;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.animated-button svg {
+  position: absolute;
+  width: 24px;
+  fill: #1f387e;
+  z-index: 9;
+  transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.animated-button .arr-1 {
+  right: 16px;
+}
+
+.animated-button .arr-2 {
+  left: -25%;
+}
+
+.animated-button .circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  background-color: #c5e5e4;
+  border-radius: 50%;
+  opacity: 0;
+  transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.animated-button .text {
+  position: relative;
+  z-index: 1;
+  transform: translateX(-12px);
+  transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.animated-button:hover {
+  box-shadow: 0 0 0 12px transparent;
+  color: #212121;
+  border-radius: 12px;
+}
+
+.animated-button:hover .arr-1 {
+  right: -25%;
+}
+
+.animated-button:hover .arr-2 {
+  left: 16px;
+}
+
+.animated-button:hover .text {
+  transform: translateX(12px);
+}
+
+.animated-button:hover svg {
+  fill: #1f387e;
+}
+
+.animated-button:active {
+  scale: 0.95;
+  box-shadow: 0 0 0 4px greenyellow;
+}
+
+.animated-button:hover .circle {
+  width: 220px;
+  height: 220px;
+  opacity: 1;
+}
+
+
+/* 下一周：使用 .animated-button 默认逻辑（右 -> 左），不用额外写 CSS */
+/* .week-btn--next { } */
+
+
+/* 本周：隐藏箭头，只留圆圈 */
+.week-btn--current .arr-1,
+.week-btn--current .arr-2 {
+  display: none;
+}
+
+/* 默认底色可以统一为你现在的浅灰色（如果你有单独的设置可以放这里） */
+.week-btn {
+  background-color: #d4d7cc;     /* 你的浅灰底色 */
+  box-shadow: none;
+  color: #1f387e;
+}
+
+/* 本周 hover 时，用 circle 制造更明显的色块变化 */
+.week-btn--current .circle {
+  background-color: #c0c4b8;     /* 比默认略深一点的灰/色 */
+}
+
+.week-btn--current:hover .circle {
+  width: 220px;
+  height: 220px;
+  opacity: 1;
+}
+
+/* 防止文字被原始 transform 影响 */
+.week-btn--current .text,
+.week-btn--current:hover .text {
+  transform: none;
+}
+
+/* 上一周：两支箭头左右镜像，整体水平翻转，使箭头指向左 */
+.week-btn--prev .arr-1,
+.week-btn--prev .arr-2 {
+  transform: scaleX(-1);      /* 把原本向右的箭头翻成向左 */
+}
+
+/* 初始状态：主箭头在左边，副箭头藏在右边外侧 */
+.week-btn--prev .arr-1 {
+  left: 16px;
+  right: auto;
+}
+.week-btn--prev .arr-2 {
+  right: -25%;
+  left: auto;
+}
+
+/* hover：主箭头左侧滑出，副箭头从右边滑入 */
+.week-btn--prev:hover .arr-1 {
+  left: -25%;
+  right: auto;
+}
+.week-btn--prev:hover .arr-2 {
+  right: 16px;
+  left: auto;
+}
+
+/* 文本轻微反向移动：初始略偏右，hover 时略偏左 */
+.week-btn--prev .text {
+  transform: translateX(8px);
+}
+.week-btn--prev:hover .text {
+  transform: translateX(-8px);
+}
+
+/* 本周：没有箭头，简单的背景色变化 */
+.week-btn--current .arr-1,
+.week-btn--current .arr-2,
+.week-btn--current .circle {
+  display: none;                /* 确保不参与任何 hover 动画 */
+}
+
+.week-btn--current {
+  background-color: #d4d7cc;    /* 你的默认浅灰底色 */
+  color: #1f387e;
+  transition: background-color 0.3s ease;
+}
+
+.week-btn--current:hover {
+  background-color: #87dbea;    /* hover 时稍微深一点，明显一些 */
+}
+
+/* 防止文字被原始 transform 影响 */
+.week-btn--current .text,
+.week-btn--current:hover .text {
+  transform: none;
+}
+
+/* 本周：没有箭头 */
+.week-btn--current .arr-1,
+.week-btn--current .arr-2,
+.week-btn--current .circle {
+  display: none;
+}
+
+/* 基础状态：有轻微圆角、阴影、过渡都写在这里 */
+.week-btn--current {
+  background-color: #cccec1;     /* 默认底色 */
+  color: #1f387e;
+  border-radius: 999px;
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  transform: translateY(0) scale(1);
+
+  /* 关键：把所有变化加 transition */
+  transition:
+    background-color 220ms ease-out,
+    box-shadow 220ms ease-out,
+    transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* hover：稍微变深一点、轻轻抬起并放大一点 */
+.week-btn--current:hover {
+  background-color: #9ad2d0;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px) scale(1.02);
+}
+
+/* 文字：淡淡的动画，让感觉更细腻 */
+.week-btn--current .text {
+  letter-spacing: 0.02em;
+  transition:
+    letter-spacing 220ms ease-out,
+    transform 220ms ease-out,
+    color 220ms ease-out;
+}
+
+.week-btn--current:hover .text {
+  letter-spacing: 0.06em;
+  transform: translateY(-0.5px);
+  color: #162a5c;  /* 比原色稍微深一点点 */
+}
+
+/* 按下态：有“按下去”的感觉 */
+.week-btn--current:active {
+  transform: translateY(0) scale(0.99);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12);
+}
+
+/* 键盘焦点可访问性 */
+.week-btn--current:focus-visible {
+  outline: 2px solid #1f387e;
+  outline-offset: 3px;
+}

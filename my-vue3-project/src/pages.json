@@ -1,0 +1,20 @@
+{
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+    { "path": "pages/index/index", "style": { "navigationStyle": "custom" } },
+    { "path": "pages/system/index", "style": { "navigationBarTitleText": "系统" } },
+		{ "path": "pages/auth/login", "style": { "navigationBarTitleText": "登录" } },
+		{ "path": "pages/auth/register", "style": { "navigationBarTitleText": "注册" } },
+		{ "path": "pages/system/room-detail", "style": { "navigationBarTitleText": "教室详情" } },
+		{ "path": "pages/reservation/create", "style": { "navigationBarTitleText": "新建预约" } },
+		{ "path": "pages/reservation/detail", "style": { "navigationBarTitleText": "预约详情" } },
+		{ "path": "pages/profile/teacher", "style": { "navigationBarTitleText": "教师中心" } },
+		{ "path": "pages/profile/student", "style": { "navigationBarTitleText": "学生中心" } },
+		{ "path": "pages/reports/monthly", "style": { "navigationBarTitleText": "月报" } }
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "排课系统",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
+	}
+}

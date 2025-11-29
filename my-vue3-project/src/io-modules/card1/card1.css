@@ -1,0 +1,20 @@
+/* From Uiverse.io by Giuxpro */
+/* Adapted as room card container for system room list */
+.room-card {
+  width: 100%;
+  height: 100%;
+  min-height: 100px;
+  background: rgb(46, 44, 44);
+  border-radius: 18px;
+  box-sizing: border-box;
+  padding: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  transition: all 300ms;
+}
+
+.room-card:hover {
+  opacity: 0.8;
+  transform: scale(1.1);
+}
+
+

@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teacher-scheduler-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: teacher-scheduler-api
+  template:
+    metadata:
+      labels:
+        app: teacher-scheduler-api
+    spec:
+      containers:
+        - name: api
+          image: your-registry/teacher-scheduler-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PORT
+              value: "3000"
+            - name: NODE_ENV
+              value: production
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: scheduler-secrets
+                  key: MONGO_URI
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: scheduler-secrets
+                  key: JWT_SECRET
+            - name: CORS_ORIGIN
+              value: "https://your-frontend.example.com"
+            - name: TZ
+              value: Asia/Shanghai
+          readinessProbe:
+            httpGet:
+              path: /api/health/ready
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health/live
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: teacher-scheduler-svc
+spec:
+  selector:
+    app: teacher-scheduler-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+---
+# Ingress/HTTPRoute 视你的网关而定，这里给出 Ingress 示例
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: teacher-scheduler-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  tls:
+    - hosts:
+        - api.example.com
+      secretName: api-tls
+  rules:
+    - host: api.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: teacher-scheduler-svc
+                port:
+                  number: 80
+

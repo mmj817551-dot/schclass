@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: teacher-scheduler-report
+spec:
+  schedule: "0 1 1 * *" # 每月1日01:00导出上月
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: reporter
+              image: your-registry/teacher-scheduler-api:latest
+              command: ["node","server/src/scripts/report-cron.js"]
+              env:
+                - name: MONGO_URI
+                  valueFrom:
+                    secretKeyRef:
+                      name: scheduler-secrets
+                      key: MONGO_URI
+                - name: S3_BUCKET
+                  valueFrom:
+                    secretKeyRef:
+                      name: scheduler-secrets
+                      key: S3_BUCKET
+                - name: S3_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: scheduler-secrets
+                      key: S3_ACCESS_KEY_ID
+                - name: S3_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: scheduler-secrets
+                      key: S3_SECRET_ACCESS_KEY
+                - name: S3_REGION
+                  value: "ap-southeast-1"
+                - name: S3_ENDPOINT
+                  value: "https://s3.example.com"
+                - name: S3_PREFIX
+                  value: "reports/"
+                - name: TZ
+                  value: "Asia/Shanghai"
+

@@ -1,0 +1,10 @@
+/* From Uiverse.io by adamgiebl */
+/* Adapted as a generic full-width card container for page sections */
+.card {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 16px;
+  background: #ffffff;
+  padding: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
